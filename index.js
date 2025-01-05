@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const tasksRouter = require('./routes/tasks.js');
 const projectsRouter = require('./routes/projects.js');
-const { USERS } = require('./db.js');
-const { authenticateToken } = require('./middleware/auth.js');
+const { USERS, ROLES } = require('./db.js');
+const { authenticateToken, authRole } = require('./middleware/auth.js');
 
 const app = express();
 const PORT = 5050;
@@ -15,7 +15,7 @@ app.use(authenticateToken);
 app.use('/tasks', tasksRouter);
 app.use('/projects', projectsRouter);
 
-app.get('/users', (req, res) => {
+app.get('/users', authRole(ROLES.ADMIN), (req, res) => {
     return res.json(USERS);
 });
 
