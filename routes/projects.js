@@ -5,15 +5,16 @@ const router = require('express').Router();
 
 
 router.get('/', (req, res) => {
-    const detailedProjects = PROJECTS.map(project => {
-        const taskCount = findTasksByProject(project.id).length;
-        const manager = findManager(project.managerId);
-        return {
-            ...project,
-            taskCount,
-            managerName: manager ? manager.username : null,
-        };
-    });
+    const detailedProjects = PROJECTS.filter(project => canViewProject(project, req.user))
+        .map(project => {
+            const taskCount = findTasksByProject(project.id).length;
+            const manager = findManager(project.managerId);
+            return {
+                ...project,
+                taskCount,
+                managerName: manager ? manager.username : null,
+            };
+        });
     res.json(detailedProjects);
 });
 
