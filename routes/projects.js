@@ -1,6 +1,6 @@
 const { PROJECTS, TASKS, findTasksByProject, findManager, fillProjectDetails } = require('../db.js');
 const { populateProject } = require('../middleware/data.js');
-const { canViewProject, canEditProject } = require('../permissions.js');
+const { canViewProject, canEditProject, canCreateProject } = require('../permissions.js');
 const router = require('express').Router();
 
 
@@ -22,7 +22,7 @@ router.get('/:id', populateProject, authViewProject, (req, res) => {
     res.json(fillProjectDetails(req.project));
 });
 
-router.post('/', (req, res) => {
+router.post('/', authCreateProject, (req, res) => {
     const { name, managerId } = req.body;
     if (!name) {
         return res.status(400).json({ error: 'Name and managerId are required' });
@@ -72,6 +72,13 @@ function authViewProject(req, res, next) {
 
 function authChangeProject(req, res, next) {
     if (!canEditProject(req.project, req.user)) {
+        return res.status(401).json({ message: "Not allowed" });
+    }
+    next();
+}
+
+function authCreateProject(req, res, next) {
+    if (!canCreateProject(req.user)) {
         return res.status(401).json({ message: "Not allowed" });
     }
     next();
