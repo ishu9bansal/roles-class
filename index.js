@@ -10,11 +10,12 @@ const PORT = 5050;
 
 // Middleware to parse JSON
 app.use(express.json());
+app.use(authenticateToken);
 
 app.use('/tasks', tasksRouter);
 app.use('/projects', projectsRouter);
 
-app.get('/users', authenticateToken, (req, res) => {
+app.get('/users', (req, res) => {
     return res.json(USERS);
 });
 
