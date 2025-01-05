@@ -1,5 +1,6 @@
 const { PROJECTS, TASKS, findTasksByProject, findManager, fillProjectDetails } = require('../db.js');
 const { populateProject } = require('../middleware/data.js');
+const { canViewProject, canEditProject } = require('../permissions.js');
 const router = require('express').Router();
 
 
@@ -16,10 +17,7 @@ router.get('/', (req, res) => {
     res.json(detailedProjects);
 });
 
-router.get('/:id', populateProject, (req, res) => {
-    if (!req.project) {
-        return res.status(404).json({ error: 'Project not found' });
-    }
+router.get('/:id', populateProject, authViewProject, (req, res) => {
     res.json(fillProjectDetails(req.project));
 });
 
@@ -43,10 +41,7 @@ router.post('/', (req, res) => {
     res.status(201).json(newProject);
 });
 
-router.post('/:id/task', populateProject, (req, res) => {
-    if (!req.project) {
-        return res.status(404).json({ error: 'Project not found' });
-    }
+router.post('/:id/task', populateProject, authChangeProject, (req, res) => {
     const { name, userId } = req.body;
     if (!name || !userId) {
         return res.status(400).json({ error: 'Name, and userId are required' });
@@ -62,12 +57,23 @@ router.post('/:id/task', populateProject, (req, res) => {
     res.status(201).json(newTask);
 });
 
-router.delete('/:id', populateProject, (req, res) => {
-    if (req.project === null) {
-        return res.status(404).json({ error: 'Project not found' });
-    }
+router.delete('/:id', populateProject, authChangeProject, (req, res) => {
     console.log("Marked project completed", req.project.id);
     res.status(204).send();
 });
+
+function authViewProject(req, res, next) {
+    if (!canViewProject(req.project, req.user)) {
+        return res.status(401).json({ message: "Not allowed" });
+    }
+    next();
+}
+
+function authChangeProject(req, res, next) {
+    if (!canEditProject(req.project, req.user)) {
+        return res.status(401).json({ message: "Not allowed" });
+    }
+    next();
+}
 
 module.exports = router;

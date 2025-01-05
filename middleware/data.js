@@ -2,6 +2,9 @@ const { findProject, findTask } = require('../db.js');
 
 function populateProject(req, res, next) {
     const project = findProject(req.params.id);
+    if (project === null) {
+        return res.status(404).json({ error: 'Project not found' });
+    }
     req.project = project;
     next();
 }
