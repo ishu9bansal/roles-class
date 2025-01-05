@@ -15,7 +15,7 @@ app.use(authenticateToken);
 app.use('/tasks', tasksRouter);
 app.use('/projects', projectsRouter);
 
-app.get('/users', authRole(ROLES.ADMIN), (req, res) => {
+app.get('/users', authRole(ROLES.ADMIN, ROLES.MANAGER), (req, res) => {
     return res.json(USERS);
 });
 

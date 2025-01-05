@@ -14,9 +14,9 @@ function authenticateToken(req, res, next) {
     });
 }
 
-function authRole(role) {
+function authRole(...roles) {
     return (req, res, next) => {
-        if (req.user.role !== role) {
+        if (!roles.includes(req.user.role)) {
             return res.status(401).json({ message: "Not allowed" });
         }
         next();
