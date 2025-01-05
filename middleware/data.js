@@ -11,6 +11,9 @@ function populateProject(req, res, next) {
 
 function populateTask(req, res, next) {
     const task = findTask(req.params.id);
+    if (!task) {
+        return res.status(404).json({ error: 'Task not found' });
+    }
     req.task = task;
     next();
 }
