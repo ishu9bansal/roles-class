@@ -1,22 +1,24 @@
-const { PROJECTS, TASKS, findTasksByProject, findManager, fillProjectDetails } = require('../db.js');
+const { PROJECTS, TASKS, findTasksByProject, findManager, fillProjectDetails, ROLES } = require('../db.js');
 const { populateProject } = require('../middleware/data.js');
+const { canViewProject, canEditProject } = require('../permissions.js');
 const router = require('express').Router();
 
 
 router.get('/', (req, res) => {
-    const detailedProjects = PROJECTS.map(project => {
-        const taskCount = findTasksByProject(project.id).length;
-        const manager = findManager(project.managerId);
-        return {
-            ...project,
-            taskCount,
-            managerName: manager ? manager.username : null,
-        };
-    });
+    const detailedProjects = PROJECTS.filter(project => canViewProject(project, req.user))
+        .map(project => {
+            const taskCount = findTasksByProject(project.id).length;
+            const manager = findManager(project.managerId);
+            return {
+                ...project,
+                taskCount,
+                managerName: manager ? manager.username : null,
+            };
+        });
     res.json(detailedProjects);
 });
 
-router.get('/:id', populateProject, (req, res) => {
+router.get('/:id', populateProject, authViewProject, (req, res) => {
     res.json(fillProjectDetails(req.project));
 });
 
@@ -56,9 +58,24 @@ router.post('/:id/task', populateProject, (req, res) => {
     res.status(201).json(newTask);
 });
 
-router.delete('/:id', populateProject, (req, res) => {
+router.delete('/:id', populateProject, authEditProject, (req, res) => {
     console.log("Marked project completed", req.project.id);
     res.status(204).send();
 });
+
+function authViewProject(req, res, next) {
+    if (!canViewProject(req.project, req.user)) {
+        return res.status(401).json({ message: "Not allowed" });
+    }
+    next();
+}
+
+function authEditProject(req, res, next) {
+    if (!canEditProject(req.project, req.user)) {
+        return res.status(401).json({ message: "Not allowed" });
+    }
+    next();
+}
+
 
 module.exports = router;
