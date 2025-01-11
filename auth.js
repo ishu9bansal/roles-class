@@ -49,7 +49,7 @@ app.delete("/logout", (req, res) => {
 });
 
 function generateAccessToken(token_data) {
-    return jwt.sign(token_data, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30s' });
+    return jwt.sign(token_data, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '3h' });
 }
 
 app.listen(5001);
