@@ -1,3 +1,5 @@
+const { ROLES } = require("./db");
+
 function canViewProject(project, user) {
     return user.role === ROLES.ADMIN || user.id === project.managerId;
 }

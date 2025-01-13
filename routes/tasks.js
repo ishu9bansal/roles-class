@@ -4,6 +4,7 @@ const { paginate } = require('../middleware/pagination.js');
 const router = require('express').Router();
 
 router.get('/', filterTasks, paginate, (req, res) => {
+
     res.json(res.paginatedResults);
 });
 
@@ -17,7 +18,13 @@ router.delete('/:id', populateTask, (req, res) => {
 });
 
 function filterTasks(req, res, next) {
-    req.paginationResource = TASKS;
+    const { users } = req.query;
+    let filteredTasks = TASKS;
+    if (users) {
+        const userIds = users.split(',').map(id => parseInt(id));
+        filteredTasks = filteredTasks.filter(task => userIds.includes(task.userId));
+    }
+    req.paginationResource = filteredTasks;
     next();
 }
 
